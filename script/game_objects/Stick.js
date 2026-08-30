@@ -9,6 +9,7 @@ function Stick(position){
     this.rotation = 0;
     this.power = 0;
     this.trackMouse = true;
+    this.wasDragging = false;
 }
 
 Stick.prototype.handleInput = function (delta) {
@@ -19,6 +20,7 @@ Stick.prototype.handleInput = function (delta) {
     if(Game.policy.turnPlayed)
       return;
 
+    // Keyboard controls (W/S for power)
     if(Keyboard.down(Keys.W) && KEYBOARD_INPUT_ON){
       if(this.power < 75){
         this.origin.x+=2;
@@ -33,6 +35,7 @@ Stick.prototype.handleInput = function (delta) {
       }
     }
 
+    // Mouse click to shoot
     else if (this.power>0 && Mouse.left.down){
       var strike = sounds.strike.cloneNode(true);
       strike.volume = (this.power/(10))<1?(this.power/(10)):1;
@@ -45,6 +48,39 @@ Stick.prototype.handleInput = function (delta) {
       var stick = this;
       setTimeout(function(){stick.visible = false;}, 500);
     }
+    
+    // Touch controls - drag to set power and angle
+    else if (Touch.isTouching) {
+      if (Touch.isDragging) {
+        // Calculate power based on drag distance
+        var maxDragDistance = 200;
+        var dragPower = Math.min(Touch.dragDistance / maxDragDistance, 1) * 75;
+        
+        // Set power based on drag
+        this.power = dragPower;
+        this.origin.x = 970 + (this.power * 2);
+        
+        // Set rotation based on drag angle (opposite direction)
+        this.rotation = Touch.dragAngle + Math.PI;
+        
+        // Mark that we were dragging
+        this.wasDragging = true;
+      } else {
+        // Just touching - aim at touch position
+        var opposite = Touch.position.y - this.position.y;
+        var adjacent = Touch.position.x - this.position.x;
+        this.rotation = Math.atan2(opposite, adjacent);
+      }
+    }
+    
+    // Shoot when touch ends after dragging
+    else if (!Touch.isTouching && this.wasDragging && this.power > 0) {
+      this.shoot(this.power, this.rotation);
+      this.wasDragging = false;
+      Touch.reset();
+    }
+    
+    // Mouse aiming
     else if(this.trackMouse){
       var opposite = Mouse.position.y - this.position.y;
       var adjacent = Mouse.position.x - this.position.x;
@@ -82,6 +118,7 @@ Stick.prototype.reset = function(){
   this.shooting = false;
   this.visible = true;
 	this.power = 0;
+  this.wasDragging = false;
 };
 
 Stick.prototype.draw = function () {

@@ -120,6 +120,7 @@ Game_Singleton.prototype.mainLoop = function () {
         Canvas2D.clear();
         Game.gameWorld.draw();
         Mouse.reset();
+        Touch.reset();
         Game.handleInput();
         requestAnimationFrame(Game.mainLoop);
     }
