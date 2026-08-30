@@ -65,16 +65,21 @@ Stick.prototype.handleInput = function (delta) {
         
         // Mark that we were dragging
         this.wasDragging = true;
+        
+        console.log("Touch drag - power:", this.power, "rotation:", this.rotation);
       } else {
         // Just touching - aim at touch position
         var opposite = Touch.position.y - this.position.y;
         var adjacent = Touch.position.x - this.position.x;
         this.rotation = Math.atan2(opposite, adjacent);
+        
+        console.log("Touch aim - rotation:", this.rotation);
       }
     }
     
     // Shoot when touch ends after dragging
     else if (!Touch.isTouching && this.wasDragging && this.power > 0) {
+      console.log("Touch shoot - power:", this.power, "rotation:", this.rotation);
       this.shoot(this.power, this.rotation);
       this.wasDragging = false;
       Touch.reset();

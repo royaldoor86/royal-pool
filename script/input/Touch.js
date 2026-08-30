@@ -7,32 +7,71 @@ function Touch_Singleton() {
     this._isTouching = false;
     this._dragDistance = 0;
     this._dragAngle = 0;
+    this._initialized = false;
+    this._fallbackAttempted = false;
     
     // Touch event handlers
     this._handleTouchStart = this._handleTouchStart.bind(this);
     this._handleTouchMove = this._handleTouchMove.bind(this);
     this._handleTouchEnd = this._handleTouchEnd.bind(this);
     
-    document.addEventListener('touchstart', this._handleTouchStart, { passive: false });
-    document.addEventListener('touchmove', this._handleTouchMove, { passive: false });
-    document.addEventListener('touchend', this._handleTouchEnd, { passive: false });
+    // Initialize when DOM is ready
+    this.initialize();
 }
+
+Touch_Singleton.prototype.initialize = function() {
+    if (this._initialized) return;
+    
+    // Add touch event listeners to canvas instead of document
+    var canvas = document.getElementById('screen');
+    if (canvas) {
+        canvas.addEventListener('touchstart', this._handleTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', this._handleTouchMove, { passive: false });
+        canvas.addEventListener('touchend', this._handleTouchEnd, { passive: false });
+        canvas.addEventListener('touchcancel', this._handleTouchEnd, { passive: false });
+        this._initialized = true;
+        console.log("Touch system initialized on canvas");
+    } else {
+        // Fallback to document if canvas not found after multiple attempts
+        if (!this._fallbackAttempted) {
+            this._fallbackAttempted = true;
+            document.addEventListener('touchstart', this._handleTouchStart, { passive: false });
+            document.addEventListener('touchmove', this._handleTouchMove, { passive: false });
+            document.addEventListener('touchend', this._handleTouchEnd, { passive: false });
+            this._initialized = true;
+            console.log("Touch system initialized on document (fallback)");
+        } else {
+            // Try again after a delay
+            var self = this;
+            setTimeout(function() {
+                self.initialize();
+            }, 100);
+        }
+    }
+};
 
 Touch_Singleton.prototype._handleTouchStart = function(evt) {
     if (evt.touches.length > 0) {
         evt.preventDefault();
         var touch = evt.touches[0];
-        var canvasScale = Canvas2D.scale;
-        var canvasOffset = Canvas2D.offset;
-        var tx = (touch.pageX - canvasOffset.x) / canvasScale.x;
-        var ty = (touch.pageY - canvasOffset.y) / canvasScale.y;
+        var canvas = Canvas2D._canvas;
+        var rect = canvas.getBoundingClientRect();
         
-        this._position = new Vector2(tx, ty);
-        this._startPosition = new Vector2(tx, ty);
+        var tx = touch.clientX - rect.left;
+        var ty = touch.clientY - rect.top;
+        
+        // Scale to canvas coordinates
+        var scaleX = canvas.width / rect.width;
+        var scaleY = canvas.height / rect.height;
+        
+        this._position = new Vector2(tx * scaleX, ty * scaleY);
+        this._startPosition = new Vector2(tx * scaleX, ty * scaleY);
         this._isTouching = true;
         this._isDragging = false;
         this._dragDistance = 0;
         this._dragAngle = 0;
+        
+        console.log("Touch start at:", this._position.x, this._position.y);
     }
 };
 
@@ -40,12 +79,17 @@ Touch_Singleton.prototype._handleTouchMove = function(evt) {
     if (evt.touches.length > 0 && this._isTouching) {
         evt.preventDefault();
         var touch = evt.touches[0];
-        var canvasScale = Canvas2D.scale;
-        var canvasOffset = Canvas2D.offset;
-        var tx = (touch.pageX - canvasOffset.x) / canvasScale.x;
-        var ty = (touch.pageY - canvasOffset.y) / canvasScale.y;
+        var canvas = Canvas2D._canvas;
+        var rect = canvas.getBoundingClientRect();
         
-        this._position = new Vector2(tx, ty);
+        var tx = touch.clientX - rect.left;
+        var ty = touch.clientY - rect.top;
+        
+        // Scale to canvas coordinates
+        var scaleX = canvas.width / rect.width;
+        var scaleY = canvas.height / rect.height;
+        
+        this._position = new Vector2(tx * scaleX, ty * scaleY);
         
         // Calculate drag distance and angle
         var dx = this._position.x - this._startPosition.x;
@@ -57,12 +101,15 @@ Touch_Singleton.prototype._handleTouchMove = function(evt) {
         if (this._dragDistance > 10) {
             this._isDragging = true;
         }
+        
+        console.log("Touch move:", this._position.x, this._position.y, "drag:", this._dragDistance);
     }
 };
 
 Touch_Singleton.prototype._handleTouchEnd = function(evt) {
     if (this._isDragging) {
         evt.preventDefault();
+        console.log("Touch end - drag detected, distance:", this._dragDistance);
     }
     this._isTouching = false;
     this._isDragging = false;
