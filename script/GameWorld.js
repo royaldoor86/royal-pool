@@ -99,19 +99,25 @@ GameWorld.prototype.ballInHand = function(){
 
     KEYBOARD_INPUT_ON = false;
     this.stick.visible = false;
-    if(!Mouse.left.down){
-        this.whiteBall.position = Mouse.position;
+    
+    // Support both mouse and touch for ball placement
+    var inputPosition = Touch.isTouching ? Touch.position : Mouse.position;
+    var isPressed = Touch.isTouching ? Touch.isDragging : Mouse.left.down;
+    
+    if(!isPressed){
+        this.whiteBall.position = inputPosition;
     }
     else{
         let ballsOverlap = this.whiteBallOverlapsBalls();
 
-        if(!Game.policy.isOutsideBorder(Mouse.position,this.whiteBall.origin) &&
-            !Game.policy.isInsideHole(Mouse.position) &&
+        if(!Game.policy.isOutsideBorder(inputPosition,this.whiteBall.origin) &&
+            !Game.policy.isInsideHole(inputPosition) &&
             !ballsOverlap){
             KEYBOARD_INPUT_ON = true;
             Keyboard.reset();
             Mouse.reset();
-            this.whiteBall.position = Mouse.position;
+            Touch.reset();
+            this.whiteBall.position = inputPosition;
             this.whiteBall.inHole = false;
             Game.policy.foul = false;
             this.stick.position = this.whiteBall.position;
@@ -203,6 +209,11 @@ GameWorld.prototype.draw = function () {
     }
 
     this.stick.draw();
+    
+    // Show touch instructions if visible
+    if (TouchInstructions && TouchInstructions.isVisible()) {
+        TouchInstructions.show();
+    }
 };
 
 GameWorld.prototype.reset = function () {

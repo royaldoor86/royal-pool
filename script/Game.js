@@ -95,7 +95,24 @@ Game_Singleton.prototype.startNewGame = function(){
         new Vector2(sprites.controls.width/2,sprites.controls.height/2)
     );
 
+    // Show touch instructions if on touch device
     setTimeout(()=>{
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            TouchInstructions.show();
+            
+            // Hide instructions on touch
+            var hideInstructions = function() {
+                if (TouchInstructions.isVisible()) {
+                    TouchInstructions.hide();
+                    document.removeEventListener('touchstart', hideInstructions);
+                    document.removeEventListener('click', hideInstructions);
+                }
+            };
+            
+            document.addEventListener('touchstart', hideInstructions);
+            document.addEventListener('click', hideInstructions);
+        }
+        
         AI.init(Game.gameWorld, Game.policy);
 
         if(AI_ON && AI_PLAYER_NUM == 0){

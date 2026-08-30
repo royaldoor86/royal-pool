@@ -99,8 +99,8 @@ Touch_Singleton.prototype._handleTouchMove = function(evt) {
         this._dragDistance = Math.sqrt(dx * dx + dy * dy);
         this._dragAngle = Math.atan2(dy, dx);
         
-        // Start dragging if moved enough
-        if (this._dragDistance > 10) {
+        // Start dragging if moved enough (reduced threshold for mobile)
+        if (this._dragDistance > 5) {
             this._isDragging = true;
         }
         
@@ -112,6 +112,9 @@ Touch_Singleton.prototype._handleTouchEnd = function(evt) {
     if (this._isDragging) {
         evt.preventDefault();
         console.log("Touch end - drag detected, distance:", this._dragDistance);
+    } else if (this._isTouching) {
+        // Tap detected (short touch without drag)
+        console.log("Touch end - tap detected");
     }
     this._isTouching = false;
     this._isDragging = false;

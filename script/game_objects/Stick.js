@@ -49,21 +49,17 @@ Stick.prototype.handleInput = function (delta) {
       setTimeout(function(){stick.visible = false;}, 500);
     }
     
-    // Touch controls - drag to set power and angle
+    // Touch controls - simplified version
     else if (Touch.isTouching) {
       if (Touch.isDragging) {
-        // Calculate power based on drag distance
-        var maxDragDistance = 200;
-        var dragPower = Math.min(Touch.dragDistance / maxDragDistance, 1) * 75;
-        
-        // Set power based on drag
-        this.power = dragPower;
-        this.origin.x = 970 + (this.power * 2);
-        
-        // Set rotation based on drag angle (opposite direction)
+        // Direction of drag = shot direction (opposite to drag)
         this.rotation = Touch.dragAngle + Math.PI;
         
-        // Mark that we were dragging
+        // Distance of drag = power
+        var maxDragDistance = 150;
+        var dragPower = Math.min(Touch.dragDistance / maxDragDistance, 1) * 75;
+        this.power = dragPower;
+        this.origin.x = 970 + (this.power * 2);
         this.wasDragging = true;
         
         console.log("Touch drag - power:", this.power, "rotation:", this.rotation);
@@ -72,8 +68,6 @@ Stick.prototype.handleInput = function (delta) {
         var opposite = Touch.position.y - this.position.y;
         var adjacent = Touch.position.x - this.position.x;
         this.rotation = Math.atan2(opposite, adjacent);
-        
-        console.log("Touch aim - rotation:", this.rotation);
       }
     }
     
@@ -130,4 +124,24 @@ Stick.prototype.draw = function () {
   if(!this.visible)
     return;
   Canvas2D.drawImage(sprites.stick, this.position,this.rotation,1, this.origin);
+  
+  // Draw touch indicator when using touch controls
+  if(Touch.isTouching && Touch.isDragging) {
+    var ctx = Canvas2D._canvas.getContext('2d');
+    
+    // Draw drag line
+    ctx.beginPath();
+    ctx.moveTo(this.position.x, this.position.y);
+    ctx.lineTo(Touch.position.x, Touch.position.y);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Draw power indicator
+    var powerPercent = (this.power / 75) * 100;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Power: ' + Math.round(powerPercent) + '%', this.position.x, this.position.y - 40);
+  }
 };
