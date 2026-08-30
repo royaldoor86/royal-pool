@@ -19,8 +19,8 @@ function Touch_Singleton() {
 }
 
 Touch_Singleton.prototype._handleTouchStart = function(evt) {
-    evt.preventDefault();
     if (evt.touches.length > 0) {
+        evt.preventDefault();
         var touch = evt.touches[0];
         var canvasScale = Canvas2D.scale;
         var canvasOffset = Canvas2D.offset;
@@ -37,8 +37,8 @@ Touch_Singleton.prototype._handleTouchStart = function(evt) {
 };
 
 Touch_Singleton.prototype._handleTouchMove = function(evt) {
-    evt.preventDefault();
     if (evt.touches.length > 0 && this._isTouching) {
+        evt.preventDefault();
         var touch = evt.touches[0];
         var canvasScale = Canvas2D.scale;
         var canvasOffset = Canvas2D.offset;
@@ -61,7 +61,9 @@ Touch_Singleton.prototype._handleTouchMove = function(evt) {
 };
 
 Touch_Singleton.prototype._handleTouchEnd = function(evt) {
-    evt.preventDefault();
+    if (this._isDragging) {
+        evt.preventDefault();
+    }
     this._isTouching = false;
     this._isDragging = false;
 };
