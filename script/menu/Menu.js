@@ -65,6 +65,7 @@ Menu.prototype.menuLoop = function(){
         Canvas2D.clear();
         this.draw();
         Mouse.reset();
+        Touch.reset();
         requestAnimationFrame(this.menuLoop.bind(this));
     }
 

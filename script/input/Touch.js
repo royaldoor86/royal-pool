@@ -9,6 +9,7 @@ function Touch_Singleton() {
     this._dragAngle = 0;
     this._initialized = false;
     this._fallbackAttempted = false;
+    this._wasPressed = false;
     
     // Touch event handlers
     this._handleTouchStart = this._handleTouchStart.bind(this);
@@ -70,6 +71,7 @@ Touch_Singleton.prototype._handleTouchStart = function(evt) {
         this._isDragging = false;
         this._dragDistance = 0;
         this._dragAngle = 0;
+        this._wasPressed = true;
         
         console.log("Touch start at:", this._position.x, this._position.y);
     }
@@ -119,6 +121,7 @@ Touch_Singleton.prototype.reset = function() {
     this._isDragging = false;
     this._isTouching = false;
     this._dragDistance = 0;
+    this._wasPressed = false;
 };
 
 Object.defineProperty(Touch_Singleton.prototype, "position", {
@@ -154,6 +157,12 @@ Object.defineProperty(Touch_Singleton.prototype, "dragDistance", {
 Object.defineProperty(Touch_Singleton.prototype, "dragAngle", {
     get: function() {
         return this._dragAngle;
+    }
+});
+
+Object.defineProperty(Touch_Singleton.prototype, "pressed", {
+    get: function() {
+        return this._wasPressed;
     }
 });
 

@@ -8,7 +8,7 @@ function Button(sprite, position, callback, hoverSprite){
 
 Button.prototype.draw = function(){
 
-    if(this.mouseInsideBorders()){
+    if(this.mouseInsideBorders() || this.touchInsideBorders()){
         Canvas2D.drawImage(this.hoverSprite, this.position, 0, 1);
         Canvas2D._canvas.style.cursor = "pointer";
     }
@@ -19,7 +19,11 @@ Button.prototype.draw = function(){
 
 Button.prototype.handleInput = function(){
 
-    if(Mouse.left.pressed && this.mouseInsideBorders()){
+    // Support both mouse and touch
+    var isPressed = (Mouse.left.pressed && this.mouseInsideBorders()) ||
+                   (Touch.pressed && this.touchInsideBorders());
+    
+    if(isPressed){
         this.callback();
     }
 }
@@ -35,6 +39,24 @@ Button.prototype.mouseInsideBorders = function(){
         mousePos.y > this.position.y
         &&
         mousePos.y < this.position.y + this.sprite.height
+    ){
+        return true;
+    }
+
+    return false;
+}
+
+Button.prototype.touchInsideBorders = function(){
+    
+    touchPos = Touch.position;
+
+    if(touchPos.x > this.position.x 
+        &&
+        touchPos.x < this.position.x + this.sprite.width
+        &&
+        touchPos.y > this.position.y
+        &&
+        touchPos.y < this.position.y + this.sprite.height
     ){
         return true;
     }
