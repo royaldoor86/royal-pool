@@ -79,8 +79,8 @@ Stick.prototype.handleInput = function (delta) {
       Touch.reset();
     }
     
-    // Mouse aiming
-    else if(this.trackMouse){
+    // Mouse aiming (only if not using touch)
+    else if(this.trackMouse && !Touch.isTouching){
       var opposite = Mouse.position.y - this.position.y;
       var adjacent = Mouse.position.x - this.position.x;
       this.rotation = Math.atan2(opposite, adjacent);
@@ -111,13 +111,16 @@ Stick.prototype.update = function(){
 };
 
 Stick.prototype.reset = function(){
-  this.position.x = Game.gameWorld.whiteBall.position.x;
-  this.position.y = Game.gameWorld.whiteBall.position.y;
+  if (Game.gameWorld && Game.gameWorld.whiteBall) {
+    this.position.x = Game.gameWorld.whiteBall.position.x;
+    this.position.y = Game.gameWorld.whiteBall.position.y;
+  }
 	this.origin = new Vector2(970,11);
   this.shooting = false;
   this.visible = true;
 	this.power = 0;
   this.wasDragging = false;
+  this.trackMouse = true;
 };
 
 Stick.prototype.draw = function () {

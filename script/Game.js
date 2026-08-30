@@ -83,24 +83,48 @@ Game_Singleton.prototype.handleInput = function(){
 Game_Singleton.prototype.startNewGame = function(){
     Canvas2D._canvas.style.cursor = "auto";
 
+    // Reset touch states
+    Touch.reset();
+    Mouse.reset();
+    Keyboard.reset();
+
     Game.gameWorld = new GameWorld();
     Game.policy = new GamePolicy();
 
-    Canvas2D.clear();
-    Canvas2D.drawImage(
-        sprites.controls, 
-        new Vector2(Game.size.x/2,Game.size.y/2), 
-        0, 
-        1, 
-        new Vector2(sprites.controls.width/2,sprites.controls.height/2)
-    );
+    // Only show control screen for 2-player mode
+    if (!AI_ON) {
+        Canvas2D.clear();
+        Canvas2D.drawImage(
+            sprites.controls, 
+            new Vector2(Game.size.x/2,Game.size.y/2), 
+            0, 
+            1, 
+            new Vector2(sprites.controls.width/2,sprites.controls.height/2)
+        );
 
-    // Show touch instructions if on touch device
-    setTimeout(()=>{
+        setTimeout(function(){
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                TouchInstructions.show();
+                
+                var hideInstructions = function() {
+                    if (TouchInstructions.isVisible()) {
+                        TouchInstructions.hide();
+                        document.removeEventListener('touchstart', hideInstructions);
+                        document.removeEventListener('click', hideInstructions);
+                    }
+                };
+                
+                document.addEventListener('touchstart', hideInstructions);
+                document.addEventListener('click', hideInstructions);
+            }
+            
+            Game.mainLoop();
+        },5000);
+    } else {
+        // Start immediately for AI games
         if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
             TouchInstructions.show();
             
-            // Hide instructions on touch
             var hideInstructions = function() {
                 if (TouchInstructions.isVisible()) {
                     TouchInstructions.hide();
@@ -119,7 +143,7 @@ Game_Singleton.prototype.startNewGame = function(){
             AI.startSession();
         }
         Game.mainLoop();
-    },5000);
+    }
 }
 
 Game_Singleton.prototype.continueGame = function(){

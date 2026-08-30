@@ -205,7 +205,9 @@ GameWorld.prototype.draw = function () {
     Game.policy.drawScores();
 
     for (var i = 0; i < this.balls.length; i++) {
-        this.balls[i].draw();
+        if (this.balls[i].visible) {
+            this.balls[i].draw();
+        }
     }
 
     this.stick.draw();

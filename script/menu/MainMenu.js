@@ -122,6 +122,7 @@ function generateMainMenuButtons(inGame){
                 Game.mainMenu.labels = generateMainMenuLabels("Choose Difficulty");
 
                 Mouse.reset();
+                Touch.reset();
                 Game.mainMenu.buttons = [
                     new Button
                     (

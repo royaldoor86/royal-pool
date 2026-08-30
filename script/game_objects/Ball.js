@@ -155,51 +155,62 @@ Ball.prototype.draw = function () {
     if(!this.visible)
         return;
 
-    // Enhanced realistic ball rendering
-    var ctx = Canvas2D._canvas.getContext('2d');
-    var radius = 25;
-    var x = this.position.x;
-    var y = this.position.y;
-    
-    // Get base color from sprite or use enhanced colors
-    var baseColor = this.getRealisticColor();
-    
-    // Create radial gradient for 3D effect
-    var gradient = ctx.createRadialGradient(
-        x - radius/3, y - radius/3, radius/10,  // highlight
-        x, y, radius                           // base
-    );
-    
-    gradient.addColorStop(0, this.lightenColor(baseColor, 60));  // highlight
-    gradient.addColorStop(0.3, this.lightenColor(baseColor, 20)); // mid-tone
-    gradient.addColorStop(0.7, baseColor);                        // base color
-    gradient.addColorStop(1, this.darkenColor(baseColor, 40));   // shadow
-    
-    // Draw ball with gradient
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = gradient;
-    ctx.fill();
-    
-    // Add subtle shadow
-    ctx.beginPath();
-    ctx.arc(x + 2, y + 2, radius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-    ctx.fill();
-    
-    // Add number for all balls (realistic pool balls)
-    var ballNumber = this.getBallNumber();
-    if (ballNumber > 0) {
+    // Fallback to sprite drawing if gradient rendering fails
+    try {
+        var ctx = Canvas2D._canvas.getContext('2d');
+        if (!ctx) {
+            Canvas2D.drawImage(this.sprite, this.position, 0, 1, new Vector2(25,25));
+            return;
+        }
+        
+        var radius = 25;
+        var x = this.position.x;
+        var y = this.position.y;
+        
+        // Get base color from sprite or use enhanced colors
+        var baseColor = this.getRealisticColor();
+        
+        // Create radial gradient for 3D effect
+        var gradient = ctx.createRadialGradient(
+            x - radius/3, y - radius/3, radius/10,  // highlight
+            x, y, radius                           // base
+        );
+        
+        gradient.addColorStop(0, this.lightenColor(baseColor, 60));  // highlight
+        gradient.addColorStop(0.3, this.lightenColor(baseColor, 20)); // mid-tone
+        gradient.addColorStop(0.7, baseColor);                        // base color
+        gradient.addColorStop(1, this.darkenColor(baseColor, 40));   // shadow
+        
+        // Draw ball with gradient
         ctx.beginPath();
-        ctx.arc(x, y, radius * 0.35, 0, Math.PI * 2);
-        ctx.fillStyle = 'white';
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
         ctx.fill();
         
-        ctx.fillStyle = 'black';
-        ctx.font = 'bold 14px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(ballNumber.toString(), x, y);
+        // Add subtle shadow
+        ctx.beginPath();
+        ctx.arc(x + 2, y + 2, radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fill();
+        
+        // Add number for all balls (realistic pool balls)
+        var ballNumber = this.getBallNumber();
+        if (ballNumber > 0) {
+            ctx.beginPath();
+            ctx.arc(x, y, radius * 0.35, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            
+            ctx.fillStyle = 'black';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(ballNumber.toString(), x, y);
+        }
+    } catch (e) {
+        // Fallback to sprite drawing if gradient rendering fails
+        console.log("Gradient rendering failed, using sprite fallback");
+        Canvas2D.drawImage(this.sprite, this.position, 0, 1, new Vector2(25,25));
     }
 };
 
